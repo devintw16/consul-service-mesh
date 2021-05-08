@@ -3,16 +3,38 @@ services:
     image: httpd:latest
     ports: 
       - 8080:80
+    networks:
+      consul-bridge:
+        ipv4_address: 10.5.0.5
   web_1:
     image: httpd:latest
     ports: 
       - 8081:80
+    networks:
+      consul-bridge:
+        ipv4_address: 10.5.0.6
   consul:
     image: consul:latest
     environment:
-      - CONSUL_BIND_INTERFACE=docker0
-  consul-agent:
-    image: consul:latest
-    environment: 
-       - CONSUL_BIND_INTERFACE=docker0
-    command: agent -bind=localhost
+      - CONSUL_BIND_INTERFACE=eth0
+    networks:
+      consul-bridge:
+        ipv4_address: 10.5.0.7
+  consul-registrator:
+    image: gliderlabs/registrator:latest
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    command: consul://10.5.0.7:8500
+    networks:
+      consul-bridge:
+        ipv4_address: 10.5.0.8
+    depends_on:
+      - consul
+
+networks:
+  consul-bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
