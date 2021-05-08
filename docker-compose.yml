@@ -1,0 +1,18 @@
+services:
+  web_0:
+    image: httpd:latest
+    ports: 
+      - 8080:80
+  web_1:
+    image: httpd:latest
+    ports: 
+      - 8081:80
+  consul:
+    image: consul:latest
+    environment:
+      - CONSUL_BIND_INTERFACE=docker0
+  consul-agent:
+    image: consul:latest
+    environment: 
+       - CONSUL_BIND_INTERFACE=docker0
+    command: agent -bind=localhost
